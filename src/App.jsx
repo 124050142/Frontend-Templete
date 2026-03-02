@@ -14,14 +14,14 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Redireccionar raíz a login */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+       
         {/* Ruta de login sin Layout */}
         <Route path="/login" element={<Login />} />
-        
+       
         {/* El Layout envuelve las demás rutas */}
         <Route element={<Layout />}>
-          {/* Redireccionar raíz a dashboard */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/productos" element={<Productos />} />
         </Route>
