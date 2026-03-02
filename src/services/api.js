@@ -1,11 +1,19 @@
-const API_URL = "http://localhost:4000/api"; // Importante colocar la url de tu api
+const API_URL = "http://localhost:4000"; // Importante colocar la url de tu api
 
 export const api = {
   get: async (endpoint) => {
     try {
-      const response = await fetch(`${API_URL}${endpoint}`);
+      const fullUrl = `${API_URL}${endpoint}`;
+      console.log("Conectando a:", fullUrl);
+      
+      const response = await fetch(fullUrl);
+      
       if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-      return await response.json();
+      
+      const data = await response.json();
+      console.log("Respuesta del servidor:", data);
+      
+      return { data };
     } catch (error) {
       console.error("Error en GET:", error);
       throw error;
@@ -27,4 +35,5 @@ export const api = {
       throw error;
     }
   }
+  
 };

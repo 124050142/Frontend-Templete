@@ -1,0 +1,113 @@
+import { useEffect, useState } from 'react';
+import { api } from '../services/api';
+import { ShoppingBag, Loader, AlertCircle } from 'lucide-react';
+
+const Productos = () => {
+  const [productos, setProductos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    cargarProductos();
+  }, []);
+
+  const cargarProductos = async () => {
+    try {
+      setLoading(true);
+      // Petición al back
+      const response = await api.get('/api/productos');
+      
+      // El backend devuelve { cantidad: 21, productos: [...] }
+      const datosRecibidos = response.data;
+      
+      console.log("Datos recibidos del Back:", datosRecibidos);
+      
+      // Extraer el array de productos
+      const listaProductos = datosRecibidos.productos || [];
+      setProductos(Array.isArray(listaProductos) ? listaProductos : []);
+      
+    } catch (err) {
+      console.error("Error en la petición:", err);
+      setError("No se pudo conectar con el servidor. ¿Está encendido el Back?");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) return (
+    <div className="flex justify-center items-center h-64">
+      <Loader className="animate-spin text-blue-600" size={48} />
+    </div>
+  );
+
+  if (error) return (
+    <div className="bg-red-100 text-red-700 p-4 rounded-lg flex items-center gap-2">
+      <AlertCircle /> {error}
+    </div>
+  );
+
+  return (
+    <div className="p-4">
+      <header className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-2">
+          <ShoppingBag className="text-blue-600" /> Inventario
+        </h1>
+        <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+          {productos.length} items
+        </span>
+      </header>
+
+      {/* Grid Responsivo */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {productos.map((prod) => (
+          <div key={prod.id || prod._id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-slate-100 overflow-hidden flex flex-col">
+            
+            {/* Imagen del producto - Soporta image_url o image */}
+            <div className="h-48 p-4 bg-white flex items-center justify-center border-b border-slate-50">
+              <img 
+                src={prod.image || prod.imagen_url || "https://via.placeholder.com/150"} 
+                alt={prod.title || prod.nombre} 
+                className="max-h-full object-contain"
+              />
+            </div>
+
+            {/* Cuerpo de la tarjeta */}
+            <div className="p-4 flex-1 flex flex-col">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-bold text-lg text-slate-800 line-clamp-1" title={prod.title || prod.nombre}>
+                  {prod.title || prod.nombre}
+                </h3>
+                <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-bold">
+                  ${prod.price || prod.precio}
+                </span>
+              </div>
+              
+              <p className="text-slate-500 text-sm line-clamp-2 mb-4 flex-1">
+                {prod.description || prod.descripcion || "Sin descripción disponible."}
+              </p>
+
+              <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-50">
+                <span className="text-xs font-medium text-slate-400">
+                  Stock: <span className={(prod.stock || 0) < 10 ? "text-red-500 font-bold" : "text-slate-600"}>
+                    {prod.stock || 0}
+                  </span>
+                </span>
+                <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                  Editar
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {productos.length === 0 && !error && (
+        <div className="text-center py-20 text-slate-500">
+          No hay productos disponibles en el inventario.
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Productos;
