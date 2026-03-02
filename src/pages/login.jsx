@@ -1,154 +1,85 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    
-    if (!email || !password) {
-      setError('Por favor completa todos los campos');
-      return;
-    }
+    setError('');
+    setLoading(true);
 
     try {
-      setLoading(true);
-      setError('');
-
-      const response = await api.post('/api/login', {
-        email,
-        password
-      });
-
-      console.log('Login exitoso:', response.data);
-
-      // Guardar token en localStorage
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('usuario', response.data.usuario);
-      }
-
-      // Redirigir a productos
+      const response = await api.post('/auth/login', { email, password });
+      console.log('Login exitoso:', response);
+      localStorage.setItem('token', response.token);
       navigate('/productos');
-
     } catch (err) {
-      console.error('Error en login:', err);
-      setError(err.message || 'Error al conectar con el servidor');
+      setError('Email o contraseña incorrectos');
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>Login</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md">
+        <h1 className="text-3xl font-bold text-gray-800 mb-2 text-center">Bienvenido</h1>
+        <p className="text-gray-600 text-center mb-6">Inicia sesión en tu cuenta</p>
 
-        {error && <div style={styles.error}>{error}</div>}
-
-        <form onSubmit={handleLogin}>
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Email:</label>
+        <form onSubmit={handleLogin} className="space-y-4">
+          {/* Email */}
+          <div>
+            <label className="block text-gray-700 font-semibold mb-2">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              style={styles.input}
               placeholder="tu@email.com"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
             />
           </div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Contraseña:</label>
+          {/* Contraseña */}
+          <div>
+            <label className="block text-gray-700 font-semibold mb-2">Contraseña</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              style={styles.input}
-              placeholder="********"
+              placeholder="•••••••••"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
             />
           </div>
 
-          <button 
-            type="submit" 
-            style={styles.button}
+          {/* Error */}
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded">
+              {error}
+            </div>
+          )}
+
+          {/* Botón */}
+          <button
+            type="submit"
             disabled={loading}
+            className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
           >
-            {loading ? 'Cargando...' : 'Iniciar Sesión'}
+            {loading ? 'Iniciando...' : 'Iniciar sesión'}
           </button>
         </form>
+
+       
       </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '100vh',
-    backgroundColor: '#f5f5f5',
-  },
-  card: {
-    backgroundColor: 'white',
-    padding: '30px',
-    borderRadius: '8px',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-    width: '100%',
-    maxWidth: '400px',
-  },
-  title: {
-    textAlign: 'center',
-    color: '#333',
-    marginBottom: '30px',
-    fontSize: '24px',
-  },
-  error: {
-    backgroundColor: '#ffebee',
-    color: '#c62828',
-    padding: '12px',
-    borderRadius: '4px',
-    marginBottom: '20px',
-    fontSize: '14px',
-  },
-  formGroup: {
-    marginBottom: '20px',
-  },
-  label: {
-    display: 'block',
-    marginBottom: '8px',
-    color: '#555',
-    fontWeight: 'bold',
-    fontSize: '14px',
-  },
-  input: {
-    width: '100%',
-    padding: '10px',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '14px',
-    boxSizing: 'border-box',
-    fontFamily: 'Arial, sans-serif',
-  },
-  button: {
-    width: '100%',
-    padding: '12px',
-    backgroundColor: '#1976d2',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    marginTop: '10px',
-  },
-};
-
-export default Login;
+}
