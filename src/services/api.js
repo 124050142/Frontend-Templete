@@ -23,13 +23,21 @@ export const api = {
   
   post: async (endpoint, body) => {
     try {
-      const response = await fetch(`${API_URL}${endpoint}`, {
+      const fullUrl = `${API_URL}${endpoint}`;
+      console.log("POST a:", fullUrl);
+      
+      const response = await fetch(fullUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
+      
       if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-      return await response.json();
+      
+      const data = await response.json();
+      console.log("Respuesta del servidor:", data);
+      
+      return { data };
     } catch (error) {
       console.error("Error en POST:", error);
       throw error;
