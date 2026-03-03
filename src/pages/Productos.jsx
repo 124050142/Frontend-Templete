@@ -1,85 +1,107 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../services/api';
-import { useNavigate } from 'react-router-dom';
+import { ShoppingBag, Loader, AlertCircle } from 'lucide-react';
 
-export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+const Productos = () => {
+  const [productos, setProductos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    cargarProductos();
+  }, []);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
+  const cargarProductos = async () => {
     try {
-      const response = await api.post('/auth/login', { email, password });
-      console.log('Login exitoso:', response);
-      localStorage.setItem('token', response.token);
-      navigate('/productos'); 
+      setLoading(true);
+      // Petición al back
+      const response = await api.get('/api/productos');
+      
+      // El backend devuelve { cantidad: 21, productos: [...] }
+      const datosRecibidos = response.data;
+      
+      console.log("Datos recibidos del Back:", datosRecibidos);
+      
+      // Extraer el array de productos
+      const listaProductos = datosRecibidos.productos || [];
+      setProductos(Array.isArray(listaProductos) ? listaProductos : []);
+      
     } catch (err) {
-      setError('Email o contraseña incorrectos');
-      console.error(err);
+      console.error("Error en la petición:", err);
+      setError("No se pudo conectar con el servidor. ¿Está encendido el Back?");
     } finally {
       setLoading(false);
     }
   };
 
+  if (loading) return (
+    <div className="flex justify-center items-center h-64">
+      <Loader className="animate-spin text-blue-600" size={48} />
+    </div>
+  );
+
+  if (error) return (
+    <div className="bg-red-100 text-red-700 p-4 rounded-lg flex items-center gap-2">
+      <AlertCircle /> {error}
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2 text-center">Bienvenido</h1>
-        <p className="text-gray-600 text-center mb-6">Inicia sesión en tu cuenta</p>
+    <div className="p-4">
+      <header className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-2">
+          <ShoppingBag className="text-blue-600" /> Inventario
+        </h1>
+        <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+          {productos.length} items
+        </span>
+      </header>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          {/* Email */}
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          {/* Contraseña */}
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">Contraseña</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="•••••••••"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          {/* Error */}
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded">
-              {error}
+      {/* Grid Responsivo */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {productos.map((prod) => (
+          <div key={prod.id || prod._id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-slate-100 overflow-hidden flex flex-col">
+            
+            {/* Imagen del producto - Soporta image_url o image */}
+            <div className="h-48 p-4 bg-white flex items-center justify-center border-b border-slate-50">
+              <img 
+                src={prod.image || prod.imagen_url || "https://via.placeholder.com/150"} 
+                alt={prod.title || prod.nombre} 
+                className="max-h-full object-contain"
+              />
             </div>
-          )}
 
-          {/* Botón */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
-          >
-            {loading ? 'Iniciando...' : 'Iniciar sesión'}
-          </button>
-        </form>
+            {/* Cuerpo de la tarjeta */}
+            <div className="p-4 flex-1 flex flex-col">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-bold text-lg text-slate-800 line-clamp-1" title={prod.title || prod.nombre}>
+                  {prod.title || prod.nombre}
+                </h3>
+                <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-bold">
+                  ${prod.price || prod.precio}
+                </span>
+              </div>
+              
+              <p className="text-slate-500 text-sm line-clamp-2 mb-4 flex-1">
+                {prod.description || prod.descripcion || "Sin descripción disponible."}
+              </p>
 
-        
+              <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-50">
+                <span className="text-xs font-medium text-slate-400">
+                  Stock: <span className={(prod.stock || 0) < 10 ? "text-red-500 font-bold" : "text-slate-600"}>
+                    {prod.stock || 0}
+                  </span>
+                </span>
+                <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                  Editar
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
-}
+};
+
+export default Productos;
