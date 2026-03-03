@@ -16,10 +16,10 @@ function App() {
       <Routes>
         {/* Redireccionar raíz a login */}
         <Route path="/" element={<Navigate to="/login" replace />} />
-       
+        
         {/* Ruta de login sin Layout */}
         <Route path="/login" element={<Login />} />
-       
+        
         {/* El Layout envuelve las demás rutas */}
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />

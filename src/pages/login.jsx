@@ -16,7 +16,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await api.post('/auth/login', { email, password });
+      const response = await api.post('/api/auth/login', { email, password });
       console.log('Login exitoso:', response);
       localStorage.setItem('token', response.token);
       navigate('/productos');
