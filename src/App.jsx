@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import Productos from './pages/Productos';
 import Login from './pages/login';
+import ProtectedRoute from './components/layout/ProtectedRoute';
 
 const Dashboard = () => (
   <div>
@@ -17,14 +18,17 @@ function App() {
         {/* Redireccionar raíz a login */}
         <Route path="/" element={<Navigate to="/login" replace />} />
         
-        {/* Ruta de login sin Layout */}
+        {/* Ruta de login */}
         <Route path="/login" element={<Login />} />
         
-        {/* El Layout envuelve las demás rutas */}
+        {/* Layout envuelve las demás rutas */}
+       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/productos" element={<Productos />} />
         </Route>
+       </Route>
+
       </Routes>
     </BrowserRouter>
   );
