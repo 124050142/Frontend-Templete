@@ -2,6 +2,7 @@ const API_URL = "http://localhost:4000"; // Importante colocar la url de tu api
 
 export const api = {
   get: async (endpoint) => {
+    
     try {
       const fullUrl = `${API_URL}${endpoint}`;
       console.log("Conectando a:", fullUrl);
